@@ -1,6 +1,7 @@
 mod app;
+mod library;
+mod tracks;
 mod tui;
-
 use app::App;
 use std::io;
 
