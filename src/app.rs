@@ -4,7 +4,6 @@ use crossterm::event::{self, Event, KeyCode};
 use ratatui::{backend::Backend, Terminal};
 use std::io;
 use std::path::PathBuf;
-
 pub struct App {
     pub running: bool,
     pub tracks: Vec<Track>,
@@ -12,8 +11,10 @@ pub struct App {
 }
 
 impl App {
-    pub fn new() -> Self {
-        let tracks = library::load_directory(PathBuf::from(".").as_path()).unwrap_or_default();
+    pub fn new(dir: PathBuf) -> Self {
+        /* leer los archivos del directorio */
+        let tracks = library::load_directory(&dir).unwrap_or_default();
+
         Self {
             running: true,
             tracks,
