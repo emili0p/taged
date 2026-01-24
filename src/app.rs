@@ -9,6 +9,7 @@ pub struct App {
     pub tracks: Vec<Track>,
     pub cursor: usize,
 }
+/* this is a comment /* 
 
 impl App {
     pub fn new(dir: PathBuf) -> Self {
