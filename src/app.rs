@@ -31,6 +31,7 @@ impl App {
                 if let Event::Key(key) = event::read()? {
                     match key.code {
                         KeyCode::Char('q') => self.running = false,
+                        KeyCode::Char('?') => Box::new(Ayuda),
                         KeyCode::Up => {
                             if self.cursor > 0 {
                                 self.cursor -= 1;
