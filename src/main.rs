@@ -1,6 +1,7 @@
 use std::{env, io, path::PathBuf};
 
 mod app;
+mod help;
 mod library;
 mod tracks;
 mod tui;

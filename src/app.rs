@@ -1,3 +1,4 @@
+use crate::help;
 use crate::library;
 use crate::tracks::Track;
 use crossterm::event::{self, Event, KeyCode};
@@ -9,7 +10,6 @@ pub struct App {
     pub tracks: Vec<Track>,
     pub cursor: usize,
 }
-/* this is a comment /* 
 
 impl App {
     pub fn new(dir: PathBuf) -> Self {
@@ -31,7 +31,6 @@ impl App {
                 if let Event::Key(key) = event::read()? {
                     match key.code {
                         KeyCode::Char('q') => self.running = false,
-                        KeyCode::Char('?') => Box::new(Ayuda),
                         KeyCode::Up => {
                             if self.cursor > 0 {
                                 self.cursor -= 1;
