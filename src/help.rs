@@ -1,7 +1,6 @@
-use crossterm::terminal::Clear;
 use ratatui::{
     prelude::*,
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, Clear, Paragraph},
 };
 pub struct Help;
 impl Help {
