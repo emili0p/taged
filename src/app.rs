@@ -29,7 +29,6 @@ impl App {
             terminal.draw(|f| {
                 crate::tui::draw(f, self);
 
-                // Dibujar help encima si está activo
                 if self.show_help {
                     help::Help::draw(f);
                 }
