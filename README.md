@@ -10,6 +10,8 @@ its works using ratatui and lofty to handle songs metadata
 -wav 
 -m4a
 ```
-```
 
+# Contribution
+
+feel free to help :)
 
