@@ -1,13 +1,12 @@
+use crate::io;
 use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::io;
-
 use ratatui::{
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout},
-    widgets::{Block, Borders, List, ListItem},
+    widgets::{Block, Borders, List, ListItem, Paragraph},
     Frame, Terminal,
 };
 
@@ -43,11 +42,27 @@ pub fn draw(f: &mut Frame, app: &App) {
         })
         .collect();
 
+    let metadata = if let Some(track) = app.tracks.get(app.cursor) {
+        format!(
+            "Filename: {}\n\nPath: {}\n\nArtist: {}\nAlbum: {}\nDuration: {}",
+            track.filename,
+            track.path.display(),
+            track.artist.as_deref().unwrap_or("Unknown"),
+            track.album.as_deref().unwrap_or("Unknown"),
+            track.duration.as_deref().unwrap_or("Unknown"),
+        )
+    } else {
+        String::from("No track selected")
+    };
+    let metadata_text =
+        Paragraph::new(metadata).block(Block::default().title("Metadatos").borders(Borders::ALL));
+
+    f.render_widget(metadata_text, chunks[1]);
+
     f.render_widget(
         List::new(items).block(Block::default().title("Tracks").borders(Borders::ALL)),
         chunks[0],
     );
-    /* TODO create a help to draw and keys to move in the drawing  */
     f.render_widget(
         Block::default().title("Metadata").borders(Borders::ALL),
         chunks[1],

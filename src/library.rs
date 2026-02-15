@@ -12,13 +12,16 @@ pub fn load_directory(path: &Path) -> io::Result<Vec<Track>> {
             if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
                 if matches!(ext, "mp3" | "flac" | "ogg" | "wav" | "m4a") {
                     tracks.push(Track {
-                        filename: path.file_name().unwrap().to_string_lossy().to_string(),
                         path: path.clone(),
+                        filename: path.file_name().unwrap().to_string_lossy().to_string(),
+                        artist: None,
+                        album: None,
+                        duration: None,
                     });
                 }
             }
         }
     }
+
     Ok(tracks)
 }
-
