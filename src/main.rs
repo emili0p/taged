@@ -5,7 +5,7 @@ mod library;
 mod tracks;
 mod tui;
 use app::App;
-
+mod mode;
 fn main() -> io::Result<()> {
     let mut terminal = tui::init()?;
     let dir = env::args()
@@ -19,3 +19,8 @@ fn main() -> io::Result<()> {
     tui::restore()?;
     res
 }
+
+/* TODO make this show the mode the editor is currently is
+as en example insert visual or normal mode
+also implement keybinding
+*/

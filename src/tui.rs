@@ -1,4 +1,6 @@
 use crate::io;
+use crate::{app::App, mode::Mode};
+
 use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
@@ -9,8 +11,6 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, Paragraph},
     Frame, Terminal,
 };
-
-use crate::app::App;
 /*  this creates the tui */
 pub fn init() -> io::Result<Terminal<CrosstermBackend<io::Stdout>>> {
     enable_raw_mode()?;
@@ -31,6 +31,12 @@ pub fn draw(f: &mut Frame, app: &App) {
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
         .split(f.size());
+
+    let mode_text = match app.mode {
+        Mode::Normal => "-- NORMAL --",
+        Mode::Insert => "-- INSERT --",
+        Mode::Visual => "-- VISUAL --",
+    };
 
     let items: Vec<ListItem> = app
         .tracks
@@ -62,9 +68,5 @@ pub fn draw(f: &mut Frame, app: &App) {
     f.render_widget(
         List::new(items).block(Block::default().title("Tracks").borders(Borders::ALL)),
         chunks[0],
-    );
-    f.render_widget(
-        Block::default().title("Metadata").borders(Borders::ALL),
-        chunks[1],
     );
 }

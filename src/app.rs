@@ -1,3 +1,5 @@
+use crate::mode::Mode;
+#[allow(dead_code)]
 use crate::tracks::Track;
 use crate::{help, library};
 use crossterm::event::{self, Event, KeyCode};
@@ -10,6 +12,7 @@ pub struct App {
     pub show_help: bool,
     pub tracks: Vec<Track>,
     pub cursor: usize,
+    pub mode: Mode,
 }
 
 impl App {
@@ -21,6 +24,7 @@ impl App {
             show_help: false,
             tracks,
             cursor: 0,
+            mode: Mode::Normal,
         }
     }
 
