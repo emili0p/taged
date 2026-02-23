@@ -7,7 +7,9 @@ use crossterm::{
 };
 use ratatui::{
     backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout},
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Color, Style},
+    text::{Line, Span},
     widgets::{Block, Borders, List, ListItem, Paragraph},
     Frame, Terminal,
 };
@@ -26,27 +28,60 @@ pub fn restore() -> io::Result<()> {
     Ok(())
 }
 pub fn draw(f: &mut Frame, app: &App) {
+    // Layout principal (vertical)
     let layout = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Min(0),    // contenido principal
-            Constraint::Length(1), // barra inferior
-        ])
+        .constraints([Constraint::Min(0), Constraint::Length(1)])
         .split(f.size());
 
+    // Layout interno horizontal
     let main_chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
         .split(layout[0]);
 
-    let mode_text = match app.mode {
-        Mode::Normal => "-- NORMAL --",
-        Mode::Insert => "-- INSERT --",
-        Mode::Visual => "-- VISUAL --",
+    let (mode_text, _style) = match app.mode {
+        Mode::Normal => (
+            "-- NORMAL --",
+            ratatui::style::Style::default().fg(ratatui::style::Color::Green),
+        ),
+        Mode::Insert => (
+            "-- INSERT --",
+            ratatui::style::Style::default().fg(ratatui::style::Color::Yellow),
+        ),
+        Mode::Visual => (
+            "-- VISUAL --",
+            ratatui::style::Style::default().fg(ratatui::style::Color::Magenta),
+        ),
     };
 
-    let mode_bar = Paragraph::new(mode_text).block(Block::default().borders(Borders::TOP));
+    let total = app.tracks.len();
+    let current = if total == 0 { 0 } else { app.cursor + 1 };
 
+    let (mode_label, mode_style) = match app.mode {
+        Mode::Normal => (
+            " NORMAL ",
+            Style::default().fg(Color::Black).bg(Color::Green),
+        ),
+        Mode::Insert => (
+            " INSERT ",
+            Style::default().fg(Color::Black).bg(Color::Yellow),
+        ),
+        Mode::Visual => (
+            " VISUAL ",
+            Style::default().fg(Color::Black).bg(Color::Magenta),
+        ),
+    };
+
+    let status_line = Line::from(vec![
+        Span::styled(mode_label, mode_style),
+        Span::raw(" | "),
+        Span::raw(format!("{total} tracks")),
+        Span::raw(" | "),
+        Span::raw(format!("{current}/{total}")),
+    ]);
+
+    let mode_bar = Paragraph::new(status_line).alignment(Alignment::Left);
     let items: Vec<ListItem> = app
         .tracks
         .iter()

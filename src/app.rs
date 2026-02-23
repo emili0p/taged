@@ -50,7 +50,6 @@ impl App {
         Ok(())
     }
     fn handle_key(&mut self, key: KeyCode) {
-        // 🔴 PRIORIDAD: si el help está abierto
         if self.show_help {
             match key {
                 KeyCode::Esc | KeyCode::Char('?') => {
