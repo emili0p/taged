@@ -25,18 +25,27 @@ pub fn restore() -> io::Result<()> {
     execute!(io::stdout(), LeaveAlternateScreen)?;
     Ok(())
 }
-
 pub fn draw(f: &mut Frame, app: &App) {
-    let chunks = Layout::default()
+    let layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Min(0),    // contenido principal
+            Constraint::Length(1), // barra inferior
+        ])
+        .split(f.size());
+
+    let main_chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
-        .split(f.size());
+        .split(layout[0]);
 
     let mode_text = match app.mode {
         Mode::Normal => "-- NORMAL --",
         Mode::Insert => "-- INSERT --",
         Mode::Visual => "-- VISUAL --",
     };
+
+    let mode_bar = Paragraph::new(mode_text).block(Block::default().borders(Borders::TOP));
 
     let items: Vec<ListItem> = app
         .tracks
@@ -47,6 +56,9 @@ pub fn draw(f: &mut Frame, app: &App) {
             ListItem::new(format!("{prefix}{}", t.filename))
         })
         .collect();
+
+    let tracks_widget =
+        List::new(items).block(Block::default().title("Tracks").borders(Borders::ALL));
 
     let metadata = if let Some(track) = app.tracks.get(app.cursor) {
         format!(
@@ -60,13 +72,11 @@ pub fn draw(f: &mut Frame, app: &App) {
     } else {
         String::from("No track selected")
     };
-    let metadata_text =
-        Paragraph::new(metadata).block(Block::default().title("Metadatos").borders(Borders::ALL));
 
-    f.render_widget(metadata_text, chunks[1]);
+    let metadata_widget =
+        Paragraph::new(metadata).block(Block::default().title("Metadata").borders(Borders::ALL));
 
-    f.render_widget(
-        List::new(items).block(Block::default().title("Tracks").borders(Borders::ALL)),
-        chunks[0],
-    );
+    f.render_widget(tracks_widget, main_chunks[0]);
+    f.render_widget(metadata_widget, main_chunks[1]);
+    f.render_widget(mode_bar, layout[1]);
 }

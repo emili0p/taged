@@ -1,11 +1,13 @@
 use crate::mode::Mode;
-#[allow(dead_code)]
 use crate::tracks::Track;
 use crate::{help, library};
+
 use crossterm::event::{self, Event, KeyCode};
 use ratatui::{backend::Backend, Terminal};
+
 use std::io;
 use std::path::PathBuf;
+use std::time::Duration;
 
 pub struct App {
     pub running: bool,
@@ -38,42 +40,99 @@ impl App {
                 }
             })?;
 
-            if event::poll(std::time::Duration::from_millis(250))? {
+            if event::poll(Duration::from_millis(250))? {
                 if let Event::Key(key) = event::read()? {
-                    match key.code {
-                        KeyCode::Char('?') => {
-                            self.show_help = !self.show_help;
-                        }
-
-                        KeyCode::Esc => {
-                            if self.show_help {
-                                self.show_help = false;
-                            }
-                        }
-
-                        KeyCode::Char('q') => {
-                            if !self.show_help {
-                                self.running = false;
-                            }
-                        }
-
-                        KeyCode::Up => {
-                            if !self.show_help && self.cursor > 0 {
-                                self.cursor -= 1;
-                            }
-                        }
-
-                        KeyCode::Down => {
-                            if !self.show_help && self.cursor + 1 < self.tracks.len() {
-                                self.cursor += 1;
-                            }
-                        }
-
-                        _ => {}
-                    }
+                    self.handle_key(key.code);
                 }
             }
         }
+
         Ok(())
+    }
+    fn handle_key(&mut self, key: KeyCode) {
+        // 🔴 PRIORIDAD: si el help está abierto
+        if self.show_help {
+            match key {
+                KeyCode::Esc | KeyCode::Char('?') => {
+                    self.show_help = false;
+                }
+                _ => {}
+            }
+            return;
+        }
+
+        match self.mode {
+            Mode::Normal => self.handle_normal_mode(key),
+            Mode::Insert => self.handle_insert_mode(key),
+            Mode::Visual => self.handle_visual_mode(key),
+        }
+    }
+
+    fn handle_normal_mode(&mut self, key: KeyCode) {
+        match key {
+            KeyCode::Char('i') | KeyCode::Char('a') => {
+                self.mode = Mode::Insert;
+            }
+
+            KeyCode::Char('v') => {
+                self.mode = Mode::Visual;
+            }
+
+            KeyCode::Char('?') => {
+                self.show_help = !self.show_help;
+            }
+
+            KeyCode::Char('q') => {
+                if !self.show_help {
+                    self.running = false;
+                }
+            }
+
+            KeyCode::Char('k') | KeyCode::Up => {
+                if self.cursor > 0 {
+                    self.cursor -= 1;
+                }
+            }
+
+            KeyCode::Char('j') | KeyCode::Down => {
+                if self.cursor + 1 < self.tracks.len() {
+                    self.cursor += 1;
+                }
+            }
+
+            _ => {}
+        }
+    }
+
+    fn handle_insert_mode(&mut self, key: KeyCode) {
+        match key {
+            KeyCode::Esc => {
+                self.mode = Mode::Normal;
+            }
+
+            _ => {}
+        }
+    }
+
+    fn handle_visual_mode(&mut self, key: KeyCode) {
+        match key {
+            KeyCode::Esc => {
+                self.mode = Mode::Normal;
+            }
+
+            KeyCode::Char('k') | KeyCode::Up => {
+                if self.cursor > 0 {
+                    self.cursor -= 1;
+                }
+            }
+
+            KeyCode::Char('j') | KeyCode::Down => {
+                if self.cursor + 1 < self.tracks.len() {
+                    self.cursor += 1;
+                }
+            }
+
+            _ => {}
+        }
     }
 }
