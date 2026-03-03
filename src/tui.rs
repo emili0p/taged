@@ -40,7 +40,7 @@ pub fn draw(f: &mut Frame, app: &App) {
         .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
         .split(layout[0]);
 
-    let (mode_text, _style) = match app.mode {
+    let (_mode_text, _style) = match app.mode {
         Mode::Normal => (
             "-- NORMAL --",
             ratatui::style::Style::default().fg(ratatui::style::Color::Green),
