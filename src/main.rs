@@ -20,7 +20,9 @@ fn main() -> io::Result<()> {
     res
 }
 
-/* TODO make this show the mode the editor is currently is
-as en example insert visual or normal mode
-also implement keybinding
+/*
+* TODO
+* make a menu to edit tracks when insert mode is pressed similar to the help menu
+* then add a multi edit with macros using vline, example change all selected files artist to other
+*
 */
