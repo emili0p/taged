@@ -97,17 +97,42 @@ pub fn draw(f: &mut Frame, app: &App) {
 
     let metadata = if let Some(track) = app.tracks.get(app.cursor) {
         format!(
-            "Filename: {}\n\nPath: {}\n\nArtist: {}\nAlbum: {}\nDuration: {}",
-            track.filename,
+            "--- [Info]
+
+            File: {}
+            Filename: {}
+
+            Artist: {}
+            Album: {}
+            Duration: {}
+
+            --- [Tags]
+
+            Genre: {}
+            Year: {}
+            Track: {}
+            Disc: {}
+            Format: {}",
             track.path.display(),
+            track.filename,
             track.artist.as_deref().unwrap_or("Unknown"),
             track.album.as_deref().unwrap_or("Unknown"),
             track.duration.as_deref().unwrap_or("Unknown"),
+            track.genre.as_deref().unwrap_or("Unknown"),
+            track.year.as_deref().unwrap_or("Unknown"),
+            track
+                .track_number
+                .map(|n| n.to_string())
+                .unwrap_or_else(|| "Unknown".into()),
+            track
+                .disc
+                .map(|n| n.to_string())
+                .unwrap_or_else(|| "Unknown".into()),
+            track.format.as_deref().unwrap_or("Unknown"),
         )
     } else {
         String::from("No track selected")
     };
-
     let metadata_widget =
         Paragraph::new(metadata).block(Block::default().title("Metadata").borders(Borders::ALL));
 
