@@ -99,24 +99,30 @@ pub fn draw(f: &mut Frame, app: &App) {
         format!(
             "--- [Info]
 
-            File: {}
-            Filename: {}
+File: {}
+Filename: {}
 
-            Artist: {}
-            Album: {}
-            Duration: {}
+Artist: {}
+Title: {}
+Album: {}
+Duration: {}
+Last Modified: {}
+Added: {}
 
             --- [Tags]
 
-            Genre: {}
-            Year: {}
-            Track: {}
-            Disc: {}
-            Format: {}",
+Genre: {}
+Year: {}
+Track: {}
+Disc: {}
+Format: {}",
             track.path.display(),
             track.filename,
             track.artist.as_deref().unwrap_or("Unknown"),
+            track.title.as_deref().unwrap_or("Unknown"),
             track.album.as_deref().unwrap_or("Unknown"),
+            track.last_modified.as_deref().unwrap_or("Unknown"),
+            track.added.as_deref().unwrap_or("Unknown"),
             track.duration.as_deref().unwrap_or("Unknown"),
             track.genre.as_deref().unwrap_or("Unknown"),
             track.year.as_deref().unwrap_or("Unknown"),
@@ -135,7 +141,6 @@ pub fn draw(f: &mut Frame, app: &App) {
     };
     let metadata_widget =
         Paragraph::new(metadata).block(Block::default().title("Metadata").borders(Borders::ALL));
-
     f.render_widget(tracks_widget, main_chunks[0]);
     f.render_widget(metadata_widget, main_chunks[1]);
     f.render_widget(mode_bar, layout[1]);
