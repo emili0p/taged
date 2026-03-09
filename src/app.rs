@@ -1,6 +1,6 @@
 use crate::mode::Mode;
 use crate::tracks::Track;
-use crate::{help, library};
+use crate::{edit, help, library};
 
 use crossterm::event::{self, Event, KeyCode};
 use ratatui::{backend::Backend, Terminal};

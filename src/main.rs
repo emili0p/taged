@@ -1,5 +1,6 @@
 use std::{env, io, path::PathBuf};
 mod app;
+mod edit;
 mod help;
 mod library;
 mod tracks;
