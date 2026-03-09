@@ -15,6 +15,7 @@ pub struct App {
     pub tracks: Vec<Track>,
     pub cursor: usize,
     pub mode: Mode,
+    pub edit_field: usize,
 }
 
 impl App {
@@ -27,6 +28,7 @@ impl App {
             tracks,
             cursor: 0,
             mode: Mode::Normal,
+            edit_field: 0,
         }
     }
 
@@ -109,6 +111,17 @@ impl App {
                 self.mode = Mode::Normal;
             }
 
+            KeyCode::Tab => {
+                self.edit_field = (self.edit_field + 1) % 5;
+            }
+
+            KeyCode::BackTab => {
+                if self.edit_field == 0 {
+                    self.edit_field = 4;
+                } else {
+                    self.edit_field -= 1;
+                }
+            }
             _ => {}
         }
     }

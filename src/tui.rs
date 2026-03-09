@@ -141,6 +141,11 @@ Format: {}",
     };
     let metadata_widget =
         Paragraph::new(metadata).block(Block::default().title("Metadata").borders(Borders::ALL));
+    if app.mode == Mode::Insert {
+        if let Some(track) = app.tracks.get(app.cursor) {
+            crate::edit::Edit::draw(f, track, app.edit_field);
+        }
+    }
     f.render_widget(tracks_widget, main_chunks[0]);
     f.render_widget(metadata_widget, main_chunks[1]);
     f.render_widget(mode_bar, layout[1]);
