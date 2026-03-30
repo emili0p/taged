@@ -26,4 +26,5 @@ fn main() -> io::Result<()> {
 * make a menu to edit tracks when insert mode is pressed similar to the help menu
 * then add a multi edit with macros using vline, example change all selected files artist to other
 *
+* so the thing over there is done but not at 100%
 */
