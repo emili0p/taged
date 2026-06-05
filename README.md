@@ -15,3 +15,7 @@ its works using ratatui and lofty to handle songs metadata
 
 feel free to help :)
 
+# state
+
+pretty much dead , sorry 
+
