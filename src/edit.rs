@@ -1,9 +1,34 @@
+use crate::tracks::Track;
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     prelude::*,
     widgets::{Block, Borders, Clear, Paragraph},
 };
 
-use crate::tracks::Track;
+pub struct EditState {
+    pub active_field: usize,
+    pub editing: bool,
+    pub current_input: String,
+    pub fields: Vec<String>,
+}
+
+impl EditState {
+    pub fn new(track: &Track) -> Self {
+        let fields = vec![
+            track.title.clone().unwrap_or_default(),
+            track.artist.clone().unwrap_or_default(),
+            track.album.clone().unwrap_or_default(),
+            track.genre.clone().unwrap_or_default(),
+        ];
+
+        Self {
+            active_field: 0,
+            editing: false,
+            current_input: String::new(),
+            fields,
+        }
+    }
+}
 
 pub struct Edit;
 
