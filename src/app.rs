@@ -2,7 +2,7 @@ use crate::mode::Mode;
 use crate::tracks::Track;
 use crate::{edit, help, library};
 
-use crossterm::event::{self, Event, KeyCode};
+use crossterm::event::{self, Event, KeyCode, KeyEvent};
 use ratatui::{backend::Backend, Terminal};
 
 use std::io;
@@ -16,6 +16,7 @@ pub struct App {
     pub cursor: usize,
     pub mode: Mode,
     pub edit_field: usize,
+    pub edit_state: Option<edit::EditState>,
 }
 
 impl App {
@@ -29,6 +30,7 @@ impl App {
             cursor: 0,
             mode: Mode::Normal,
             edit_field: 0,
+            edit_state: None, // Inicializar como None
         }
     }
 
@@ -51,6 +53,7 @@ impl App {
 
         Ok(())
     }
+
     fn handle_key(&mut self, key: KeyCode) {
         if self.show_help {
             match key {
@@ -62,6 +65,29 @@ impl App {
             return;
         }
 
+        if let Some(edit_state) = &mut self.edit_state {
+            let key_event = KeyEvent::from(key);
+            if let Some(action) = edit_state.handle_key(key_event) {
+                match action {
+                    edit::EditAction::Save(updated_track) => {
+                        // Guardar los cambios
+                        self.tracks[self.cursor] = updated_track;
+                        self.edit_state = None;
+                        self.mode = Mode::Normal;
+                        self.edit_field = 0;
+                    }
+                    edit::EditAction::Cancel => {
+                        // Cancelar edición
+                        self.edit_state = None;
+                        self.mode = Mode::Normal;
+                        self.edit_field = 0;
+                    }
+                }
+            }
+            return;
+        }
+
+        // Si no estamos editando, manejar modos normales
         match self.mode {
             Mode::Normal => self.handle_normal_mode(key),
             Mode::Insert => self.handle_insert_mode(key),
@@ -71,8 +97,16 @@ impl App {
 
     fn handle_normal_mode(&mut self, key: KeyCode) {
         match key {
-            KeyCode::Char('i') | KeyCode::Char('a') => {
+            KeyCode::Char('i') => {
                 self.mode = Mode::Insert;
+            }
+
+            KeyCode::Char('e') => {
+                // Tecla para editar el track actual
+                if let Some(track) = self.tracks.get(self.cursor) {
+                    self.edit_state = Some(edit::EditState::new(track));
+                    // No cambiamos Mode::Insert porque el editor tiene su propio modo
+                }
             }
 
             KeyCode::Char('v') => {
@@ -111,6 +145,12 @@ impl App {
                 self.mode = Mode::Normal;
             }
 
+            KeyCode::Char('e') => {
+                if let Some(track) = self.tracks.get(self.cursor) {
+                    self.edit_state = Some(edit::EditState::new(track));
+                }
+            }
+
             KeyCode::Tab => {
                 self.edit_field = (self.edit_field + 1) % 5;
             }
@@ -122,6 +162,7 @@ impl App {
                     self.edit_field -= 1;
                 }
             }
+
             _ => {}
         }
     }

@@ -91,11 +91,9 @@ pub enum EditAction {
     Save(Track),
     Cancel,
 }
-
-pub struct Edit;
-
+// edit.rs
 impl Edit {
-    pub fn draw(f: &mut Frame, state: &EditState) {
+    pub fn draw(f: &mut Frame, track: &Track, active_field: usize) {
         let area = centered_rect(60, 70, f.size());
 
         let block = Block::default()
@@ -105,17 +103,18 @@ impl Edit {
         let inner = block.inner(area);
         let width = inner.width as usize;
 
-        let labels = ["Title", "Artist", "Album", "Genre", "Year"];
+        let fields = vec![
+            ("Title", track.title.as_deref().unwrap_or("")),
+            ("Artist", track.artist.as_deref().unwrap_or("")),
+            ("Album", track.album.as_deref().unwrap_or("")),
+            ("Genre", track.genre.as_deref().unwrap_or("")),
+            ("Year", track.year.as_deref().unwrap_or("")),
+        ];
+
         let mut lines: Vec<Line> = Vec::new();
 
-        for (i, label) in labels.iter().enumerate() {
-            let display_value = if state.editing && i == state.active_field {
-                state.current_input.as_str()
-            } else {
-                state.fields[i].as_str()
-            };
-
-            let label_style = if i == state.active_field {
+        for (i, (label, value)) in fields.iter().enumerate() {
+            let label_style = if i == active_field {
                 Style::default()
                     .fg(Color::Yellow)
                     .add_modifier(Modifier::BOLD)
@@ -123,30 +122,22 @@ impl Edit {
                 Style::default().fg(Color::Cyan)
             };
 
-            let value_style = if i == state.active_field && !state.editing {
+            let value_style = if i == active_field {
                 Style::default().fg(Color::Black).bg(Color::Yellow)
-            } else if state.editing && i == state.active_field {
-                Style::default().fg(Color::White).bg(Color::DarkGray)
             } else {
-                Style::default().fg(Color::Gray)
+                Style::default()
             };
 
             lines.push(Line::from(vec![
-                Span::styled(format!("{:<8}: ", label), label_style),
-                Span::styled(
-                    format!("{:<width$}", display_value, width = width - 10),
-                    value_style,
-                ),
+                Span::styled(format!("{label:<8}: "), label_style),
+                Span::styled(format!("{value:<width$}", width = width - 10), value_style),
             ]));
         }
 
         lines.push(Line::from(""));
-        lines.push(Line::from("[Tab] Next field  [e] Edit field"));
-        lines.push(Line::from("[Enter] Save      [Esc] Cancel"));
-
-        if state.editing {
-            lines.push(Line::from("Editing: type and press Enter"));
-        }
+        lines.push(Line::from("[Tab] Next field"));
+        lines.push(Line::from("[Enter] Save"));
+        lines.push(Line::from("[Esc] Cancel"));
 
         let paragraph = Paragraph::new(lines).alignment(Alignment::Left);
 
@@ -155,7 +146,7 @@ impl Edit {
         f.render_widget(paragraph, inner);
     }
 }
-
+pub struct Edit;
 fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
     let popup_layout = Layout::default()
         .direction(Direction::Vertical)
@@ -175,4 +166,3 @@ fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
         ])
         .split(popup_layout[1])[1]
 }
-
