@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-
+#[derive(Default)]
 pub struct Track {
     pub path: PathBuf,
     pub filename: String,
