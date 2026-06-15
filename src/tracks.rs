@@ -1,11 +1,10 @@
-use std::path::PathBuf;
-
 use lofty::{
     config::WriteOptions,
-    file::{AudioFile, TaggedFileExt},
-    prelude::{Accessor, TagExt},
-    tag::{Tag, TagType},
+    prelude::*,
+    probe::Probe,
+    tag::{ItemKey, Tag},
 };
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Default)]
 pub struct Track {
@@ -31,54 +30,67 @@ pub struct Track {
 
 impl Track {
     pub fn save_metadata(&self) -> Result<(), anyhow::Error> {
-        let mut tagged_file = lofty::read_from_path(&self.path)?;
+        let mut tagged_file = Probe::open(&self.path)
+            .expect("ERROR: Bad path provided!")
+            .read()
+            .expect("ERROR: Failed to read file!");
 
-        if tagged_file.primary_tag_mut().is_none() {
-            let new_tag = Tag::new(TagType::Id3v2);
-            tagged_file.set_primary_tag(new_tag);
-        }
-
-        let tag = tagged_file.primary_tag_mut().unwrap();
+        let tag = match tagged_file.primary_tag_mut() {
+            Some(primary_tag) => primary_tag,
+            None => {
+                if let Some(first_tag) = tagged_file.first_tag_mut() {
+                    first_tag
+                } else {
+                    let tag_type = tagged_file.primary_tag_type();
+                    eprintln!("WARN: No tags found, creating a new tag of type `{tag_type:?}`");
+                    tagged_file.insert_tag(Tag::new(tag_type));
+                    tagged_file.primary_tag_mut().unwrap()
+                }
+            }
+        };
 
         if let Some(title) = &self.title {
-            tag.set_title(title.clone());
+            tag.set_title(title);
         }
 
         if let Some(artist) = &self.artist {
-            tag.set_artist(artist.clone());
+            tag.set_artist(artist);
         }
 
         if let Some(album) = &self.album {
-            tag.set_album(album.clone());
+            tag.set_album(album);
         }
 
         if let Some(genre) = &self.genre {
-            tag.set_genre(genre.clone());
+            tag.set_genre(genre);
         }
-
-        if let Some(year) = &self.year {
-            if let Ok(year_num) = year.parse::<u32>() {
-                tag.set_year(year_num);
-            }
-        }
-
+        /*
+                if let Some(year) = &self.year {
+                    if let Ok(year_num) = year.parse::<u32>() {
+                        tag.set_year(year_num);
+                    }
+                }
+        */
         if let Some(track_num) = self.track_number {
             tag.set_track(track_num);
         }
 
         if let Some(disc_num) = self.disc {
-            tag.set_disc(disc_num);
+            tag.set_disk(disc_num); // Usar set_disk, no set_disc
         }
 
-        // Guardar cambios
-        let write_options = WriteOptions::default();
-        tagged_file.save_to_path(&self.path, write_options)?;
+        tag.save_to_path(&self.path, WriteOptions::default())
+            .expect("ERROR: Failed to write the tag!");
 
         Ok(())
     }
 
     pub fn load_from_path(path: PathBuf) -> Result<Self, anyhow::Error> {
-        let tagged_file = lofty::read_from_path(&path)?;
+        let tagged_file = Probe::open(&path)
+            .expect("ERROR: Bad path provided!")
+            .read()
+            .expect("ERROR: Failed to read file!");
+
         let filename = path
             .file_name()
             .unwrap_or_default()
@@ -91,22 +103,30 @@ impl Track {
             ..Default::default()
         };
 
-        if let Some(tag) = tagged_file.primary_tag() {
-            track.title = tag.title().map(|s| s.to_string());
-            track.artist = tag.artist().map(|s| s.to_string());
-            track.album = tag.album().map(|s| s.to_string());
-            track.genre = tag.genre().map(|s| s.to_string());
+        let tag = match tagged_file.primary_tag() {
+            Some(primary_tag) => primary_tag,
+            None => tagged_file.first_tag().expect("ERROR: No tags found!"),
+        };
 
-            track.year = tag.year().map(|y| y.to_string());
-            track.track_number = tag.track();
-            track.disc = tag.disc();
+        track.title = tag.title().map(|s| s.to_string());
+        track.artist = tag.artist().map(|s| s.to_string());
+        track.album = tag.album().map(|s| s.to_string());
+        track.genre = tag.genre().map(|s| s.to_string());
+        //  track.year = tag.year().map(|y| y.to_string());
+        track.track_number = tag.track();
+        track.disc = tag.disk(); // Usar disk(), no disc()
+
+        if let Some(album_artist) = tag.get_string(ItemKey::AlbumArtist) {
+            // Podrías guardarlo en un campo adicional si quieres
         }
 
         let properties = tagged_file.properties();
-        track.duration = Some(format!("{:.2}", properties.duration().as_secs_f32()));
+        let duration = properties.duration();
+        let seconds = duration.as_secs() % 60;
+        let duration_display = format!("{:02}:{:02}", (duration.as_secs() - seconds) / 60, seconds);
 
-        let format_str = format!("{:?}", properties.container());
-        track.format = Some(format_str);
+        track.duration = Some(duration_display);
+        track.format = Some(format!("{:?}", properties.container()));
 
         Ok(track)
     }
