@@ -27,7 +27,8 @@ pub struct Track {
     pub last_modified: Option<String>,
     pub added: Option<String>,
 }
-
+// we left this temporaly unused
+#[warn(dead_code)]
 impl Track {
     pub fn save_metadata(&self) -> Result<(), anyhow::Error> {
         let mut tagged_file = Probe::open(&self.path)
@@ -50,19 +51,17 @@ impl Track {
         };
 
         if let Some(title) = &self.title {
-            tag.set_title(title);
+            tag.set_title(title.clone());
         }
 
         if let Some(artist) = &self.artist {
-            tag.set_artist(artist);
+            tag.set_artist(artist.clone());
         }
-
         if let Some(album) = &self.album {
-            tag.set_album(album);
+            tag.set_album(album.clone());
         }
-
         if let Some(genre) = &self.genre {
-            tag.set_genre(genre);
+            tag.set_genre(genre.clone());
         }
         /*
                 if let Some(year) = &self.year {
@@ -126,9 +125,8 @@ impl Track {
         let duration_display = format!("{:02}:{:02}", (duration.as_secs() - seconds) / 60, seconds);
 
         track.duration = Some(duration_display);
-        track.format = Some(format!("{:?}", properties.container()));
+        track.format = Some(format!("{:?}", tagged_file.properties()));
 
         Ok(track)
     }
 }
-

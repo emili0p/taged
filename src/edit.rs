@@ -91,7 +91,7 @@ pub enum EditAction {
     Save(Track),
     Cancel,
 }
-// edit.rs
+
 impl Edit {
     pub fn draw(f: &mut Frame, track: &Track, active_field: usize) {
         let area = centered_rect(60, 70, f.size());
@@ -146,6 +146,7 @@ impl Edit {
         f.render_widget(paragraph, inner);
     }
 }
+
 pub struct Edit;
 fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
     let popup_layout = Layout::default()
