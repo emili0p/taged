@@ -27,6 +27,11 @@ pub struct Track {
     pub last_modified: Option<String>,
     pub added: Option<String>,
 }
+/*
+TODO
+i need to fix this shit
+
+* */
 // we left this temporaly unused
 #[warn(dead_code)]
 impl Track {
@@ -115,9 +120,7 @@ impl Track {
         track.track_number = tag.track();
         track.disc = tag.disk(); // Usar disk(), no disc()
 
-        if let Some(album_artist) = tag.get_string(ItemKey::AlbumArtist) {
-            // Podrías guardarlo en un campo adicional si quieres
-        }
+        if let Some(album_artist) = tag.get_string(ItemKey::AlbumArtist) {}
 
         let properties = tagged_file.properties();
         let duration = properties.duration();
